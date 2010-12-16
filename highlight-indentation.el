@@ -17,11 +17,13 @@
 
 ;;; Code:
 
-;; Face for highlighting indentation
-(make-face 'highlight-indent-face)
-(set-face-attribute 'highlight-indent-face nil :background "#555555")
-;; (set-face-attribute 'highlight-indent-face nil :inherit 'font-lock-warning-face)
-;; (set-face-attribute 'highlight-indent-face nil :inherit 'region)
+(defface highlight-indent-face
+  '((((class color) (min-colors 88) (background dark))
+     :background "grey22")
+    (((class color) (min-colors 88) (background light))
+     :background "grey88"))
+  "Basic face for highlighting indentation guides."
+  :group 'basic-faces)
 
 ;; Used buffer-local to toggle on-off
 (setq-default highlight-indent-active nil)
@@ -34,7 +36,6 @@ Optional argument INDENT-WIDTH specifies which indentation
 level (spaces only) should be highlighted, if omitted
 indent-width will be guessed from current major-mode"
   (interactive "P")
-
   (when (not highlight-indent-active)
     (set (make-local-variable 'highlight-indent-offset)
          (if indent-width
@@ -47,18 +48,17 @@ indent-width will be guessed from current major-mode"
                  ((local-variable-p 'c-basic-offset)
                   c-basic-offset)
                  (t
-                  (default-value 'highlight-indent-offset)
-                  )))))
+                  (default-value 'highlight-indent-offset))))))
   (let ((re (format "\\( \\) \\{%s\\}" (- highlight-indent-offset 1))))
     (if highlight-indent-active
         (progn ;; Toggle off
           (set (make-local-variable 'highlight-indent-active) nil)
           (font-lock-remove-keywords nil `((,re (1 'highlight-indent-face))))
-          (message "Highlight indent OFF"))
+          (message "highlight-indentation OFF"))
       (progn ;; Toggle on
         (set (make-local-variable 'highlight-indent-active) t)
         (font-lock-add-keywords nil `((,re (1 'highlight-indent-face))))
-        (message (format "Highlight-indent with indent-width %s"
+        (message (format "highlight-indentation with indent-width %s"
                          highlight-indent-offset))))
     (font-lock-fontify-buffer)))
 
