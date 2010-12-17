@@ -42,7 +42,9 @@ indent-width will be guessed from current major-mode"
              indent-width
            ;; Set indentation offset according to major mode
            (cond ((eq major-mode 'python-mode)
-                  py-indent-offset)
+                  (if (boundp 'python-indent)
+                      python-indent
+                    py-indent-offset))
                  ((eq major-mode 'ruby-mode)
                   ruby-indent-level)
                  ((local-variable-p 'c-basic-offset)
