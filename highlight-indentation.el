@@ -47,6 +47,8 @@ indent-width will be guessed from current major-mode"
                     py-indent-offset))
                  ((eq major-mode 'ruby-mode)
                   ruby-indent-level)
+                 ((eq major-mode 'nxml-mode)
+                  nxml-child-indent)
                  ((local-variable-p 'c-basic-offset)
                   c-basic-offset)
                  (t

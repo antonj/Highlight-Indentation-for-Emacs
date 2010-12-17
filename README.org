@@ -2,3 +2,6 @@
   Provides a function =highlight-indentation= to toggle visual
   guidelines for indentation (using spaces), example screenshot:
   [[http://i.imgur.com/F509p.png]]
+
+  Appearance of guidelines is customizable by changing the face
+  =highlight-indent-face=.
