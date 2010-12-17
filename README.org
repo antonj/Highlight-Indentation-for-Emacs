@@ -1,0 +1,4 @@
+* Highlighting indentation for Emacs
+  Provides a function =highlight-indentation= to toggle visual
+  guidelines for indentation (using spaces), example screenshot:
+  [[http://i.imgur.com/F509p.png]]
