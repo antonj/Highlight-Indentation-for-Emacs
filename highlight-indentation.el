@@ -19,10 +19,8 @@
 ;;; Code:
 
 (defface highlight-indent-face
-  '((((class color) (min-colors 88) (background dark))
-     :background "grey22")
-    (((class color) (min-colors 88) (background light))
-     :background "grey88"))
+  ;; Fringe has non intrusive color in most color-themes
+  '((t :inherit fringe))
   "Basic face for highlighting indentation guides."
   :group 'basic-faces)
 
