@@ -57,13 +57,10 @@ indent-width will be guessed from current major-mode"
     (if highlight-indent-active
         (progn ;; Toggle off
           (set (make-local-variable 'highlight-indent-active) nil)
-          (font-lock-remove-keywords nil `((,re (1 'highlight-indent-face))))
-          (message "highlight-indentation OFF"))
+          (font-lock-remove-keywords nil `((,re (1 'highlight-indent-face)))))
       (progn ;; Toggle on
         (set (make-local-variable 'highlight-indent-active) t)
-        (font-lock-add-keywords nil `((,re (1 'highlight-indent-face))))
-        (message (format "highlight-indentation with indent-width %s"
-                         highlight-indent-offset))))
+        (font-lock-add-keywords nil `((,re (1 'highlight-indent-face))))))
     (font-lock-fontify-buffer)))
 
 (provide 'highlight-indentation)
