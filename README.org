@@ -1,7 +1,21 @@
 * Highlighting indentation for Emacs
-  Provides a function =highlight-indentation= to toggle visual
-  guidelines for indentation (using spaces), example screenshot:
-  [[http://i.imgur.com/F509p.png]]
+  Provides two minor modes =highlight-indentation-mode= and
+  =highlight-indentation-current-column-mode= (modified version from
+  @krestenkrab [[https://gist.github.com/151043]]
+
+  - =highlight-indentation-mode= displays guidelines indentation
+    (space indentation only).
+  - =highlight-indentation-current-column-mode= displays guidelines for
+    the current-point indentation (space indentation only).
+    
+  [[http://i.imgur.com/TUyPH.png]]
 
   Appearance of guidelines is customizable by changing the face
-  =highlight-indent-face=.
+  =highlight-indentation-face= and
+  =highlight-indentation-current-column-face=.
+
+  Example, colors from screenshot:
+  #+BEGIN_SRC emacs-lisp
+  (set-face-background 'highlight-indentation-face "#e3e3d3")
+  (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
+  #+END_SRC

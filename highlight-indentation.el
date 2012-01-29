@@ -15,7 +15,8 @@
 ;; PURPOSE.  See the GNU General Public License for more details.
 ;;
 ;;; Commentary:
-;; Customize `highlight-indentation-face' to suit your theme.
+;; Customize `highlight-indentation-face', and
+;; `highlight-indentation-current-column-face' to suit your theme.
 
 ;;; Code:
 
