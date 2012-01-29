@@ -1,7 +1,7 @@
-;;; highlight-indentation.el --- Function for highlighting indentation
+;;; highlight-indentation.el --- Minor modes for highlighting indentation
 ;; Author: Anton Johansson <anton.johansson@gmail.com> - http://antonj.se
 ;; Created: Dec 15 23:42:04 2010
-;; Version: 0.5.0
+;; Version: 0.6.0
 ;; URL: https://github.com/antonj/Highlight-Indentation-for-Emacs
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -15,54 +15,79 @@
 ;; PURPOSE.  See the GNU General Public License for more details.
 ;;
 ;;; Commentary:
-;; Customize `highlight-indent-face' to suit your theme.
+;; Customize `highlight-indentation-face' to suit your theme.
 
 ;;; Code:
 
-(defface highlight-indent-face
+(defgroup highlight-indentation nil
+  "Highlight Indentation"
+  :prefix "highlight-indentation-"
+  :group 'basic-faces)
+
+(defface highlight-indentation-face
   ;; Fringe has non intrusive color in most color-themes
   '((t :inherit fringe))
   "Basic face for highlighting indentation guides."
-  :group 'basic-faces)
+  :group 'highlight-indentation)
 
-;; Used buffer-local to toggle on-off
-(setq-default highlight-indent-active nil)
-;; Needed to to remove font-lock-keywords
-(setq-default highlight-indent-offset 4)
+(defcustom highlight-indentation-offset 4
+  "Default indentation offset, used if no other can be found from
+  major mode. This value is always used by
+  `highlight-indentation-mode' if set buffer local. Set buffer
+  local with `highlight-indentation-set-offset'"
+  :group 'highlight-indendation)
 
-(defun highlight-indentation (&optional indent-width)
-  "Toggle highlight indentation.
-Optional argument INDENT-WIDTH specifies which indentation
-level (spaces only) should be highlighted, if omitted
-indent-width will be guessed from current major-mode"
-  (interactive "P")
-  (when (not highlight-indent-active)
-    (set (make-local-variable 'highlight-indent-offset)
-         (if indent-width
-             indent-width
-           ;; Set indentation offset according to major mode
-           (cond ((eq major-mode 'python-mode)
-                  (if (boundp 'python-indent)
-                      python-indent
-                    py-indent-offset))
-                 ((eq major-mode 'ruby-mode)
-                  ruby-indent-level)
-                 ((eq major-mode 'nxml-mode)
-                  nxml-child-indent)
-                 ((local-variable-p 'c-basic-offset)
-                  c-basic-offset)
-                 (t
-                  (default-value 'highlight-indent-offset))))))
-  (let ((re (format "\\( \\) \\{%s\\}" (- highlight-indent-offset 1))))
-    (if highlight-indent-active
-        (progn ;; Toggle off
-          (set (make-local-variable 'highlight-indent-active) nil)
-          (font-lock-remove-keywords nil `((,re (1 'highlight-indent-face)))))
-      (progn ;; Toggle on
-        (set (make-local-variable 'highlight-indent-active) t)
-        (font-lock-add-keywords nil `((,re (1 'highlight-indent-face))))))
-    (font-lock-fontify-buffer)))
+(defvar highlight-indentation-current-regex nil)
+
+;;;###autoload
+(define-minor-mode highlight-indentation-mode
+  "Highlight indentation minor mode highlights indentation based
+on spaces"
+  :lighter " ||"
+  (when highlight-indentation-current-regex ;; OFF
+    (font-lock-remove-keywords nil `((,highlight-indentation-current-regex
+                                      (1 'highlight-indentation-face)))))
+
+  (set (make-local-variable 'highlight-indentation-current-regex) nil)
+
+  (when highlight-indentation-mode ;; ON
+    (set (make-local-variable 'highlight-indentation-offset)
+         ;; Set indentation offset from highlight-indentation-offset if set, otherwise
+         ;; according to major mode
+         (cond ((local-variable-p 'highlight-indentation-offset)
+                highlight-indentation-offset)
+               ((eq major-mode 'python-mode)
+                (if (boundp 'python-indent)
+                    python-indent
+                  py-indent-offset))
+               ((eq major-mode 'ruby-mode)
+                ruby-indent-level)
+               ((eq major-mode 'nxml-mode)
+                nxml-child-indent)
+               ((local-variable-p 'c-basic-offset)
+                c-basic-offset)
+               (t
+                (default-value 'highlight-indentation-offset))))
+    (set (make-local-variable 'highlight-indentation-current-regex)
+         (format "\\( \\) \\{%s\\}" (- highlight-indentation-offset 1)))
+    (font-lock-add-keywords nil `((,highlight-indentation-current-regex
+                                   (1 'highlight-indentation-face)))))
+  (font-lock-fontify-buffer))
+
+;;;###autoload
+(defun highlight-indentation-set-offset (offset)
+  "Set indentation offset localy in buffer, will prevent
+highlight-indentation from trying to guess indentation offset
+from major mode"
+   (interactive
+    (if (and current-prefix-arg (not (consp current-prefix-arg)))
+        (list (prefix-numeric-value current-prefix-arg))
+      (list (read-number "Indentation offset: "))))
+   (set (make-local-variable 'highlight-indentation-offset) offset)
+   (when highlight-indentation-mode
+     (highlight-indentation-mode)))
 
 (provide 'highlight-indentation)
-
+                      
 ;;; highlight-indentation.el ends here
+               
