@@ -62,6 +62,8 @@ on spaces"
                     py-indent-offset))
                  ((eq major-mode 'ruby-mode)
                   ruby-indent-level)
+                 ((eq major-mode 'scala-mode)
+                  scala-mode-indent:step)
                  ((eq major-mode 'nxml-mode)
                   nxml-child-indent)
                  ((local-variable-p 'c-basic-offset)
