@@ -66,6 +66,8 @@ on spaces"
                   scala-mode-indent:step)
                  ((eq major-mode 'nxml-mode)
                   nxml-child-indent)
+                 ((eq major-mode 'coffee-mode)
+                  coffee-tab-width)
                  ((local-variable-p 'c-basic-offset)
                   c-basic-offset)
                  (t
