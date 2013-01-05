@@ -66,6 +66,8 @@ on spaces"
                   scala-indent:step)
                  ((and (eq major-mode 'scala-mode) (boundp 'scala-mode-indent:step))
                   scala-mode-indent:step)
+                 ((or (eq major-mode 'scss-mode) (eq major-mode 'css-mode))
+                  css-indent-offset)
                  ((eq major-mode 'nxml-mode)
                   nxml-child-indent)
                  ((eq major-mode 'coffee-mode)
