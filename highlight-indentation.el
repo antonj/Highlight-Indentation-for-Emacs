@@ -80,8 +80,8 @@ on spaces"
                   (default-value 'highlight-indentation-offset)))))
     (set (make-local-variable 'highlight-indentation-current-regex)
          (format "\\( \\) \\{%s\\}" (- highlight-indentation-offset 1)))
-    (font-lock-add-keywords nil `((,highlight-indentation-current-regex
-                                   (1 'highlight-indentation-face)))))
+    (font-lock-add-keywords nil `((,highlight-indentation-current-regex 
+         (1 (if (save-excursion (skip-chars-backward " \t") (bolp)) 'highlight-indentation-face))))))
   (font-lock-fontify-buffer))
 
 ;;;###autoload
