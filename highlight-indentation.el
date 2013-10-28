@@ -74,6 +74,10 @@ on spaces"
                   nxml-child-indent)
                  ((eq major-mode 'coffee-mode)
                   coffee-tab-width)
+		 ((eq major-mode 'js-mode)
+		  js-indent-level)
+		 ((eq major-mode 'js2-mode)
+		  js2-basic-offset)
                  ((local-variable-p 'c-basic-offset)
                   c-basic-offset)
                  (t
