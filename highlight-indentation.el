@@ -78,6 +78,11 @@ on spaces"
                   js-indent-level)
                  ((eq major-mode 'js2-mode)
                   js2-basic-offset)
+		 ((eq (derived-mode-class major-mode) 'sws-mode)
+		  sws-tab-width)
+                 ((eq major-mode 'web-mode) ; multiple lang mode
+		  ; other similar vars: web-mode-{css-indent,scripts}-offset
+		  web-mode-html-offset) 
                  ((local-variable-p 'c-basic-offset)
                   c-basic-offset)
                  (t
