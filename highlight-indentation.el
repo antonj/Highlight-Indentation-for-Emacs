@@ -27,7 +27,7 @@
 
 (defface highlight-indentation-face
   ;; Fringe has non intrusive color in most color-themes
-  '((t :inherit fringe))
+  '((inherit fringe))
   "Basic face for highlighting indentation guides."
   :group 'highlight-indentation)
 
@@ -38,18 +38,78 @@
   local with `highlight-indentation-set-offset'"
   :group 'highlight-indentation)
 
-(defvar highlight-indentation-current-regex nil)
+(defconst highlight-indentation-hooks
+  '((after-change-functions highlight-indentation-redraw-region t t)
+    (window-scroll-functions highlight-indentation-update-window-for-scroll nil t)))
+
+(defun highlight-indentation-get-buffer-windows (&optional all-frames)
+  "Return a list of windows displaying the current buffer."
+  (get-buffer-window-list (current-buffer) 'no-minibuf all-frames))
+
+(defun highlight-indentation-delete-overlays-buffer ()
+  "Delete all overlays in the current buffer."
+  (save-restriction
+    (widen)
+    (highlight-indentation-delete-overlays-region (point-min) (point-max))))
+
+(defun highlight-indentation-delete-overlays-region (start end)
+  "Delete overlays between START and END."
+  (mapc #'(lambda (o)
+            (if (overlay-get o 'highlight-indentation-overlay) (delete-overlay o)))
+        (overlays-in start end)))
+
+(defun highlight-indentation-put-overlays-region (start end)
+  "Place overlays between START and END."
+  (goto-char start)
+  (let (o ;; overlay
+        (last-indent 0)
+        (pos start))
+    (while (< pos end)
+      (beginning-of-line)
+      (while (and (integerp (char-after))
+                  (not (= 10 (char-after))) ;; newline
+                  (= 32 (char-after))) ;; space
+        (when (= 0 (% (current-column) highlight-indentation-offset))
+          (setq pos (point)
+                last-indent pos
+                o (make-overlay pos (+ pos 1)))
+          (overlay-put o 'highlight-indentation-overlay t)
+          (overlay-put o 'face 'highlight-indentation-face))
+        (forward-char))
+      (forward-line) ;; Next line
+      (setq pos (point)))))
+
+(defun highlight-indentation-redraw-region (start end _ignored)
+  "Erase and readd overlays between START and END."
+  (save-match-data
+    (save-excursion
+      (let ((inhibit-point-motion-hooks t))
+        (goto-char end)
+        (setq end (line-beginning-position 2))
+        (highlight-indentation-delete-overlays-region start end)
+        (highlight-indentation-put-overlays-region start end)))))
+
+(defun highlight-indentation-redraw-window (win &optional start)
+  "Redraw win starting from START."
+  (highlight-indentation-redraw-region (or start (window-start win)) (window-end win t) 'ignored))
+
+(defun highlight-indentation-redraw-all-windows (&optional all-frames)
+  "Redraw the all windows showing the current buffer."
+  (dolist (win (highlight-indentation-get-buffer-windows all-frames))
+    (highlight-indentation-redraw-window win)))
+
+(defun highlight-indentation-update-window-for-scroll (win start)
+  "Redraw win"
+  (highlight-indentation-redraw-window win start))
 
 ;;;###autoload
 (define-minor-mode highlight-indentation-mode
-  "Highlight indentation minor mode highlights indentation based
-on spaces"
+  "Highlight indentation minor mode highlights indentation based on spaces"
   :lighter " ||"
-  (when highlight-indentation-current-regex ;; OFF
-    (font-lock-remove-keywords nil `((,highlight-indentation-current-regex
-                                      (1 'highlight-indentation-face)))))
-
-  (set (make-local-variable 'highlight-indentation-current-regex) nil)
+  (when (not highlight-indentation-mode) ;; OFF
+    (highlight-indentation-delete-overlays-buffer)
+    (dolist (hook highlight-indentation-hooks)
+      (remove-hook (car hook) (nth 1 hook) (nth 3 hook))))
 
   (when highlight-indentation-mode ;; ON
     (when (not (local-variable-p 'highlight-indentation-offset))
@@ -80,17 +140,17 @@ on spaces"
                   js2-basic-offset)
                  ((eq (derived-mode-class major-mode) 'sws-mode)
                   sws-tab-width)
-                 ((eq major-mode 'web-mode) 
+                 ((eq major-mode 'web-mode)
                   web-mode-html-offset) ; other similar vars: web-mode-{css-indent,scripts}-offset
                  ((local-variable-p 'c-basic-offset)
                   c-basic-offset)
                  (t
                   (default-value 'highlight-indentation-offset)))))
-    (set (make-local-variable 'highlight-indentation-current-regex)
-         (format "\\( \\) \\{%s\\}" (- highlight-indentation-offset 1)))
-    (font-lock-add-keywords nil `((,highlight-indentation-current-regex
-                                   (1 'highlight-indentation-face)))))
-  (font-lock-fontify-buffer))
+
+    ;; Setup hooks
+    (dolist (hook highlight-indentation-hooks)
+      (apply 'add-hook hook))
+    (highlight-indentation-redraw-all-windows)))
 
 ;;;###autoload
 (defun highlight-indentation-set-offset (offset)
