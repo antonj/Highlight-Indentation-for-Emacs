@@ -138,7 +138,7 @@
                   js-indent-level)
                  ((eq major-mode 'js2-mode)
                   js2-basic-offset)
-                 ((eq (derived-mode-class major-mode) 'sws-mode)
+                 ((and (fboundp 'derived-mode-class) (eq (derived-mode-class major-mode) 'sws-mode))
                   sws-tab-width)
                  ((eq major-mode 'web-mode)
                   web-mode-html-offset) ; other similar vars: web-mode-{css-indent,scripts}-offset
