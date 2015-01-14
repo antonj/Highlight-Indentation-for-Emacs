@@ -27,7 +27,7 @@
 
 (defface highlight-indentation-face
   ;; Fringe has non intrusive color in most color-themes
-  '((inherit fringe))
+  '((t :inherit fringe))
   "Basic face for highlighting indentation guides."
   :group 'highlight-indentation)
 
