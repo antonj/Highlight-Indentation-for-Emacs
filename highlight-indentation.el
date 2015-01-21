@@ -250,19 +250,7 @@ corresponding to the indentation of the current line"
     (dolist (hook highlight-indentation-current-column-hooks)
       (apply 'add-hook hook))
     (highlight-indentation-redraw-all-windows 'highlight-indentation-current-column-overlay
-                                              'highlight-indentation-current-column-put-overlays-region))
-  
-  ;; (cond  (highlight-indentation-current-column-mode
-  ;;         (add-hook 'post-command-hook 'highlight-indentation-current-column-post-command-hook nil t))
-  ;;        (t
-  ;;         (remove-hook 'post-command-hook 'highlight-indentation-current-column-post-command-hook t)
-  ;;         (font-lock-fontify-buffer)))
-)
-
-(defun highlight-indentation-current-column-post-command-hook ()
-  "This hook runs after every keystroke"
-
-  )
+                                              'highlight-indentation-current-column-put-overlays-region)))
 
 (provide 'highlight-indentation)
 
