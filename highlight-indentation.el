@@ -188,23 +188,10 @@ from major mode"
 (defvar highlight-indentation-current-column-overlay-priority 2)
 
 (defconst highlight-indentation-current-column-hooks
-  '((after-change-functions (lambda (start end length)
-                              (highlight-indentation-redraw-region
-                               start end
-                               'highlight-indentation-current-column-overlay
-                               'highlight-indentation-current-column-put-overlays-region))
-                            t t)
-    (post-command-hook (lambda () 
+  '((post-command-hook (lambda () 
+                         (message "post command")
                          (highlight-indentation-redraw-all-windows 'highlight-indentation-current-column-overlay
-                                                                   'highlight-indentation-current-column-put-overlays-region)
-                         ))
-    (window-scroll-functions (lambda (win start)
-                               (highlight-indentation-redraw-window
-                                win
-                                'highlight-indentation-current-column-overlay
-                                'highlight-indentation-current-column-put-overlays-region
-                                start))
-                             nil t)))
+                                                                   'highlight-indentation-current-column-put-overlays-region)) nil t)))
 
 (defun highlight-indentation-current-column-put-overlays-region (start end overlay)
   "Place overlays between START and END."
