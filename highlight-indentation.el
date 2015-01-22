@@ -189,7 +189,6 @@ from major mode"
 
 (defconst highlight-indentation-current-column-hooks
   '((post-command-hook (lambda () 
-                         (message "post command")
                          (highlight-indentation-redraw-all-windows 'highlight-indentation-current-column-overlay
                                                                    'highlight-indentation-current-column-put-overlays-region)) nil t)))
 
