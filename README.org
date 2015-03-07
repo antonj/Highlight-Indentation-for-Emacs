@@ -1,7 +1,6 @@
 * Highlighting indentation for Emacs
   Provides two minor modes =highlight-indentation-mode= and
-  =highlight-indentation-current-column-mode= (modified version from
-  @krestenkrab [[https://gist.github.com/151043]]
+  =highlight-indentation-current-column-mode=
 
   - =highlight-indentation-mode= displays guidelines indentation
     (space indentation only).
