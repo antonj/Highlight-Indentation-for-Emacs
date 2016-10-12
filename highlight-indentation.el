@@ -136,7 +136,7 @@
         ((and (fboundp 'derived-mode-class) (eq (derived-mode-class major-mode) 'sws-mode))
          sws-tab-width)
         ((eq major-mode 'web-mode)
-         web-mode-html-offset) ; other similar vars: web-mode-{css-indent,scripts}-offset
+         web-mode-markup-indent-offset) ; other similar vars: web-mode-{css-indent,scripts}-offset
         ((local-variable-p 'c-basic-offset)
          c-basic-offset)
         (t
