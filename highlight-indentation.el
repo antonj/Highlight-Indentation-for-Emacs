@@ -31,12 +31,16 @@
   "Basic face for highlighting indentation guides."
   :group 'highlight-indentation)
 
-(defcustom highlight-indentation-offset 4
+(defcustom highlight-indentation-offset
+  (if (and (boundp 'standard-indent) standard-indent) standard-indent 2)
   "Default indentation offset, used if no other can be found from
   major mode. This value is always used by
   `highlight-indentation-mode' if set buffer local. Set buffer
   local with `highlight-indentation-set-offset'"
   :group 'highlight-indentation)
+
+(defvar highlight-indentation-overlay-priority 1)
+(defvar highlight-indentation-current-column-overlay-priority 2)
 
 (defconst highlight-indentation-hooks
   '((after-change-functions (lambda (start end length)
