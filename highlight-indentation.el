@@ -145,6 +145,8 @@
          web-mode-html-offset)
         ((and (local-variable-p 'c-basic-offset) (boundp 'c-basic-offset))
          c-basic-offset)
+        ((and (eq major-mode 'yaml-mode) (boundp 'yaml-indent-offset))
+         yaml-indent-offset)
         (t
          (default-value 'highlight-indentation-offset))))
 
