@@ -147,6 +147,8 @@
          c-basic-offset)
         ((and (eq major-mode 'yaml-mode) (boundp 'yaml-indent-offset))
          yaml-indent-offset)
+        ((and (eq major-mode 'elixir-mode) (boundp 'elixir-smie-indent-basic))
+         elixir-smie-indent-basic)
         (t
          (default-value 'highlight-indentation-offset))))
 
