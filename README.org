@@ -18,3 +18,6 @@
   (set-face-background 'highlight-indentation-face "#e3e3d3")
   (set-face-background 'highlight-indentation-current-column-face "#c3b3b3")
   #+END_SRC
+** Installation
+*** Debian 9 or later or Ubuntu 16.10 or later
+=apt-get install elpa-highlight-indentation=
