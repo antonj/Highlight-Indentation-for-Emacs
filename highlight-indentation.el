@@ -20,6 +20,17 @@
 
 ;;; Code:
 
+(eval-when-compile
+  (defvar ruby-indent-level)
+  (defvar css-indent-offset)
+  (defvar nxml-child-indent)
+  (defvar coffee-tab-width)
+  (defvar js-indent-level)
+  (defvar js2-basic-offset)
+  (defvar sws-tab-width)
+  (defvar web-mode-html-offset)
+  (defvar c-basic-offset))
+
 (defgroup highlight-indentation nil
   "Highlight Indentation"
   :prefix "highlight-indentation-"
