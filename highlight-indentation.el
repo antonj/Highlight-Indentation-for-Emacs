@@ -53,7 +53,7 @@
                                (highlight-indentation-redraw-window
                                 win
                                 'highlight-indentation-overlay
-                                'highlight-indentation-put-overlays-region 
+                                'highlight-indentation-put-overlays-region
                                 start))
                              nil t)))
 
@@ -165,7 +165,7 @@
     (when (not (local-variable-p 'highlight-indentation-offset))
       (set (make-local-variable 'highlight-indentation-offset)
            (highlight-indentation-guess-offset)))
-    
+
     ;; Setup hooks
     (dolist (hook highlight-indentation-hooks)
       (apply 'add-hook hook))
@@ -195,7 +195,7 @@ from major mode"
   :group 'highlight-indentation)
 
 (defconst highlight-indentation-current-column-hooks
-  '((post-command-hook (lambda () 
+  '((post-command-hook (lambda ()
                          (highlight-indentation-redraw-all-windows 'highlight-indentation-current-column-overlay
                                                                    'highlight-indentation-current-column-put-overlays-region)) nil t)))
 
@@ -228,7 +228,7 @@ from major mode"
   "Hilight Indentation minor mode displays a vertical bar
 corresponding to the indentation of the current line"
   :lighter " |"
-  
+
   (when (not highlight-indentation-current-column-mode) ;; OFF
     (highlight-indentation-delete-overlays-buffer 'highlight-indentation-current-column-overlay)
     (dolist (hook highlight-indentation-current-column-hooks)
@@ -238,7 +238,7 @@ corresponding to the indentation of the current line"
     (when (not (local-variable-p 'highlight-indentation-offset))
       (set (make-local-variable 'highlight-indentation-offset)
            (highlight-indentation-guess-offset)))
-    
+
     ;; Setup hooks
     (dolist (hook highlight-indentation-current-column-hooks)
       (apply 'add-hook hook))
