@@ -190,7 +190,7 @@ from major mode"
 ;;; first character of the current line.
 (defface highlight-indentation-current-column-face
   ;; Fringe has non intrusive color in most color-themes
-  '((t (:background "black")))
+  '((t :inherit fringe))
   "Basic face for highlighting indentation guides."
   :group 'highlight-indentation)
 
