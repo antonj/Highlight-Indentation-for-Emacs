@@ -39,6 +39,18 @@
   local with `highlight-indentation-set-offset'"
   :group 'highlight-indentation)
 
+(defcustom highlight-indentation-blank-lines nil
+  "Show indentation guides on blank lines.  Experimental.
+
+Known issues:
+- Doesn't work well with completion popups that use overlays
+- Overlays on blank lines sometimes aren't cleaned up or updated perfectly
+  Can be refershed by scrolling
+- Not yet implemented for highlight-indentation-current-column-mode
+- May not work perfectly near the bottom of the screen
+- Point appears after indent guides on blank lines"
+  :group 'highlight-indentation)
+
 (defvar highlight-indentation-overlay-priority 1)
 (defvar highlight-indentation-current-column-overlay-priority 2)
 
@@ -82,6 +94,8 @@
   (save-match-data
     (save-excursion
       (let ((inhibit-point-motion-hooks t)
+            (start (save-excursion (goto-char start) (beginning-of-line) (point)))
+
             (end (save-excursion (goto-char end) (line-beginning-position 2))))
         (highlight-indentation-delete-overlays-region start end overlay)
         (funcall func start end overlay)))))
@@ -93,24 +107,71 @@
 
 (defun highlight-indentation-put-overlays-region (start end overlay)
   "Place overlays between START and END."
-  (goto-char start)
+  (goto-char end)
   (let (o ;; overlay
         (last-indent 0)
-        (pos start))
-    (while (< pos end)
-      (beginning-of-line)
-      (while (and (integerp (char-after))
-                  (not (= 10 (char-after))) ;; newline
-                  (= 32 (char-after))) ;; space
-        (when (= 0 (% (current-column) highlight-indentation-offset))
-          (setq pos (point)
-                last-indent pos
-                o (make-overlay pos (+ pos 1)))
-          (overlay-put o overlay t)
-          (overlay-put o 'priority highlight-indentation-overlay-priority)
-          (overlay-put o 'face 'highlight-indentation-face))
-        (forward-char))
-      (forward-line) ;; Next line
+        (last-char 0)
+        (pos (point))
+        (loop t))
+    (while (and loop
+                (>= pos start))
+      (save-excursion
+        (beginning-of-line)
+        (let ((c 0)
+              (cur-column (current-column)))
+          (while (and (setq c (char-after))
+                      (integerp c)
+                      (not (= 10 c)) ;; newline
+                      (= 32 c)) ;; space
+            (when (= 0 (% cur-column highlight-indentation-offset))
+              (let ((p (point)))
+                (setq o (make-overlay p (+ p 1))))
+              (overlay-put o overlay t)
+              (overlay-put o 'priority highlight-indentation-overlay-priority)
+              (overlay-put o 'face 'highlight-indentation-face))
+            (forward-char)
+            (setq cur-column (current-column)))
+          (when (and highlight-indentation-blank-lines
+                     (integerp c)
+                     (or (= 10 c)
+                         (= 13 c)))
+            (when (< cur-column last-indent)
+              (let ((column cur-column)
+                    (s nil)
+                    (show t)
+                    num-spaces)
+                (while (< column last-indent)
+                  (if (>= 0
+                          (setq num-spaces
+                                (%
+                                 (- last-indent column)
+                                 highlight-indentation-offset)))
+                      (progn
+                        (setq num-spaces (1- highlight-indentation-offset))
+                        (setq show t))
+                    (setq show nil))
+                  (setq s (cons (concat
+                                 (if show
+                                     (propertize " "
+                                                 'face
+                                                 'highlight-indentation-face)
+                                   "")
+                                 (make-string num-spaces 32))
+                                s))
+                  (setq column (+ column num-spaces (if show 1 0))))
+                (setq s (apply 'concat (reverse s)))
+                (let ((p (point)))
+                  (setq o (make-overlay p p)))
+                (overlay-put o overlay t)
+                (overlay-put o 'priority highlight-indentation-overlay-priority)
+                (overlay-put o 'after-string s))
+              (setq cur-column last-indent)))
+          (setq last-indent (* highlight-indentation-offset
+                               (ceiling (/ (float cur-column)
+                                           highlight-indentation-offset))))))
+      (when (= pos start)
+        (setq loop nil))
+      (forward-line -1) ;; previous line
       (setq pos (point)))))
 
 (defun highlight-indentation-guess-offset ()
