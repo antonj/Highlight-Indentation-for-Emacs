@@ -43,16 +43,18 @@
   "Show indentation guides on blank lines.  Experimental.
 
 Known issues:
-- Doesn't work well with completion popups that use overlays
 - Overlays on blank lines sometimes aren't cleaned up or updated perfectly
-  Can be refershed by scrolling
+  Can be refreshed by scrolling
 - Not yet implemented for highlight-indentation-current-column-mode
 - May not work perfectly near the bottom of the screen
-- Point appears after indent guides on blank lines"
+- Point appears after indent guides on blank lines
+- (Should be fixed) Doesn't work well with completion popups that use overlays"
   :group 'highlight-indentation)
 
 (defvar highlight-indentation-overlay-priority 1)
 (defvar highlight-indentation-current-column-overlay-priority 2)
+(defvar highlight-indentation-hidden-overlays nil)
+(defvar highlight-indentation--completing nil)
 
 (defconst highlight-indentation-hooks
   '((after-change-functions (lambda (start end length)
@@ -84,6 +86,24 @@ Known issues:
   (mapc #'(lambda (o)
             (if (overlay-get o overlay) (delete-overlay o)))
         (overlays-in start end)))
+
+(defun highlight-indentation-hide-overlays-region (start end overlay)
+  "Hide overlays between START and END."
+  (mapc #'(lambda (o)
+            (when (overlay-get o overlay)
+              (highlight-indentation-hide-overlay o)))
+        (overlays-in start end)))
+
+(defun highlight-indentation-hide-overlay (o)
+  "Hide a single overlay."
+  (push `(,o . ,(overlay-get o 'after-string)) highlight-indentation-hidden-overlays)
+  (overlay-put o 'after-string nil))
+
+(defun highlight-indentation-unhide-overlays ()
+  "Unhide overlays hidden by `highlight-indentation-hide-overlay'."
+  (dolist (entry highlight-indentation-hidden-overlays)
+    (overlay-put (car entry) 'after-string (cdr entry)))
+  (setq highlight-indentation-hidden-overlays nil))
 
 (defun highlight-indentation-redraw-window (win overlay func &optional start)
   "Redraw win starting from START."
@@ -128,7 +148,9 @@ Known issues:
                 (setq o (make-overlay p (+ p 1))))
               (overlay-put o overlay t)
               (overlay-put o 'priority highlight-indentation-overlay-priority)
-              (overlay-put o 'face 'highlight-indentation-face))
+              (overlay-put o 'face 'highlight-indentation-face)
+              (when highlight-indentation--completing
+                (highlight-indentation-hide-overlay o)))
             (forward-char)
             (setq cur-column (current-column)))
           (when (and highlight-indentation-blank-lines
@@ -164,7 +186,9 @@ Known issues:
                   (setq o (make-overlay p p)))
                 (overlay-put o overlay t)
                 (overlay-put o 'priority highlight-indentation-overlay-priority)
-                (overlay-put o 'after-string s))
+                (overlay-put o 'after-string s)
+                (when highlight-indentation--completing
+                  (highlight-indentation-hide-overlay o)))
               (setq cur-column last-indent)))
           (setq last-indent (* highlight-indentation-offset
                                (ceiling (/ (float cur-column)
@@ -220,7 +244,12 @@ Known issues:
   (when (not highlight-indentation-mode) ;; OFF
     (highlight-indentation-delete-overlays-buffer 'highlight-indentation-overlay)
     (dolist (hook highlight-indentation-hooks)
-      (remove-hook (car hook) (nth 1 hook) (nth 3 hook))))
+      (remove-hook (car hook) (nth 1 hook) (nth 3 hook)))
+
+    ;; Fix company overlay bug
+    (remove-hook 'company-completion-started-hook #'highlight-indentation--completion-start t)
+    (remove-hook 'company-completion-finished-hook #'highlight-indentation--completion-end t)
+    (remove-hook 'company-completion-cancelled-hook #'highlight-indentation--completion-end t))
 
   (when highlight-indentation-mode ;; ON
     (when (not (local-variable-p 'highlight-indentation-offset))
@@ -231,7 +260,12 @@ Known issues:
     (dolist (hook highlight-indentation-hooks)
       (apply 'add-hook hook))
     (highlight-indentation-redraw-all-windows 'highlight-indentation-overlay
-                                              'highlight-indentation-put-overlays-region)))
+                                              'highlight-indentation-put-overlays-region)
+
+    ;; Fix company overlay bug
+    (add-hook 'company-completion-started-hook #'highlight-indentation--completion-start nil t)
+    (add-hook 'company-completion-finished-hook #'highlight-indentation--completion-end nil t)
+    (add-hook 'company-completion-cancelled-hook #'highlight-indentation--completion-end nil t)))
 
 ;;;###autoload
 (defun highlight-indentation-set-offset (offset)
@@ -283,6 +317,20 @@ from major mode"
         (forward-char))
       (forward-line) ;; Next line
       (setq pos (point)))))
+
+(defun highlight-indentation--completion-start (&rest _)
+  "Ran when company completion start.  For fixing bug with company overlay."
+  (when highlight-indentation-blank-lines
+    (setq highlight-indentation--completing t)
+    (let ((start (point))
+          (end (line-beginning-position 3)))
+      (highlight-indentation-hide-overlays-region start end 'highlight-indentation-overlay))))
+
+(defun highlight-indentation--completion-end (&rest _)
+  "Ran when company completion end.  For fixing bug with company overlay."
+  (when highlight-indentation-blank-lines
+    (setq highlight-indentation--completing nil)
+    (highlight-indentation-unhide-overlays)))
 
 ;;;###autoload
 (define-minor-mode highlight-indentation-current-column-mode
