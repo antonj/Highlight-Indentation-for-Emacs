@@ -43,6 +43,7 @@
   "Show indentation guides on blank lines.  Experimental.
 
 Known issues:
+- Doesn't work well with completion popups that use overlays
 - Overlays on blank lines sometimes aren't cleaned up or updated perfectly
   Can be refershed by scrolling
 - Not yet implemented for highlight-indentation-current-column-mode
