@@ -37,6 +37,7 @@
   major mode. This value is always used by
   `highlight-indentation-mode' if set buffer local. Set buffer
   local with `highlight-indentation-set-offset'"
+  :type 'integer
   :group 'highlight-indentation)
 
 (defcustom highlight-indentation-blank-lines nil
