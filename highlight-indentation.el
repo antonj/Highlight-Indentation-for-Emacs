@@ -39,7 +39,7 @@
   local with `highlight-indentation-set-offset'"
   :group 'highlight-indentation)
 
-(defcustom highlight-indentation-blank-lines t
+(defcustom highlight-indentation-blank-lines nil
   "Show indentation guides on blank lines.  Experimental.
 
 Known issues:
