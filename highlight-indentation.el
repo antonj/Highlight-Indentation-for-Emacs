@@ -31,6 +31,52 @@
   "Basic face for highlighting indentation guides."
   :group 'highlight-indentation)
 
+(defface highlight-indentation-face
+  ;; Fringe has non intrusive color in most color-themes
+  '((t :inherit fringe))
+  "Basic face for highlighting indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-1
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 1 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-2
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 2 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-3
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 3 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-4
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 4 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-5
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 5 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-6
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 6 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-7
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 7 indentation guides."
+  :group 'highlight-indentation)
+
+(defface highlight-indentation-face-8
+  '((t :inherit highlight-indentation-face))
+  "Face for highlighting level 8 indentation guides."
+  :group 'highlight-indentation)
+
 (defcustom highlight-indentation-offset
   (if (and (boundp 'standard-indent) standard-indent) standard-indent 2)
   "Default indentation offset, used if no other can be found from
@@ -55,6 +101,17 @@ Known issues:
 (defvar highlight-indentation-current-column-overlay-priority 2)
 (defvar highlight-indentation-hidden-overlays nil)
 (defvar highlight-indentation--completing nil)
+
+(defconst highlight-indentation-num-faces 8)
+(defconst highlight-indentation-faces
+  [highlight-indentation-face-1
+   highlight-indentation-face-2
+   highlight-indentation-face-3
+   highlight-indentation-face-4
+   highlight-indentation-face-5
+   highlight-indentation-face-6
+   highlight-indentation-face-7
+   highlight-indentation-face-8])
 
 (defconst highlight-indentation-hooks
   '((after-change-functions (lambda (start end length)
@@ -138,6 +195,7 @@ Known issues:
       (save-excursion
         (beginning-of-line)
         (let ((c 0)
+              (level 0)
               (cur-column (current-column)))
           (while (and (setq c (char-after))
                       (integerp c)
@@ -148,9 +206,14 @@ Known issues:
                 (setq o (make-overlay p (+ p 1))))
               (overlay-put o overlay t)
               (overlay-put o 'priority highlight-indentation-overlay-priority)
-              (overlay-put o 'face 'highlight-indentation-face)
+              (overlay-put o 'face (aref highlight-indentation-faces level))
               (when highlight-indentation--completing
-                (highlight-indentation-hide-overlay o)))
+                (highlight-indentation-hide-overlay o))
+              (setq level
+                    (let ((l (1+ level)))
+                      (if (>= l highlight-indentation-num-faces)
+                          0
+                        l))))
             (forward-char)
             (setq cur-column (current-column)))
           (when (and highlight-indentation-blank-lines
@@ -174,13 +237,20 @@ Known issues:
                     (setq show nil))
                   (setq s (cons (concat
                                  (if show
-                                     (propertize " "
-                                                 'face
-                                                 'highlight-indentation-face)
+                                     (propertize
+                                      " "
+                                      'face
+                                      (aref highlight-indentation-faces level))
                                    "")
                                  (make-string num-spaces 32))
                                 s))
-                  (setq column (+ column num-spaces (if show 1 0))))
+                  (setq column (+ column num-spaces (if show 1 0)))
+                  (when show
+                    (setq level
+                          (let ((l (1+ level)))
+                            (if (>= l highlight-indentation-num-faces)
+                                0
+                              l)))))
                 (setq s (apply 'concat (reverse s)))
                 (let ((p (point)))
                   (setq o (make-overlay p p)))
