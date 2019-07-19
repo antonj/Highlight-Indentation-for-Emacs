@@ -101,6 +101,10 @@ Known issues:
 (defvar highlight-indentation-current-column-overlay-priority 2)
 (defvar highlight-indentation-hidden-overlays nil)
 (defvar highlight-indentation--completing nil)
+(defvar highlight-indentation--idle-timer nil)
+(defvar highlight-indentation--changes nil)
+(defvar-local highlight-indentation--prev-start nil)
+(defvar-local highlight-indentation--prev-end nil)
 
 (defconst highlight-indentation-num-faces 8)
 (defconst highlight-indentation-faces
@@ -115,10 +119,12 @@ Known issues:
 
 (defconst highlight-indentation-hooks
   '((after-change-functions (lambda (start end length)
-                              (highlight-indentation-redraw-region
-                               start end
-                               'highlight-indentation-overlay
-                               'highlight-indentation-put-overlays-region))
+                              (push `(,start . ,end) highlight-indentation--changes)
+                              ;; (highlight-indentation-redraw-region
+                              ;;  start end
+                              ;;  'highlight-indentation-overlay
+                              ;;  'highlight-indentation-put-overlays-region)
+                              )
                             t t)
     (window-scroll-functions (lambda (win start)
                                (highlight-indentation-redraw-window
@@ -127,6 +133,18 @@ Known issues:
                                 'highlight-indentation-put-overlays-region
                                 start))
                              nil t)))
+
+(defun highlight-indentation-redraw-changes ()
+  "Redraw all changes recorded in `after-change-functions'."
+  (let ((inhibit-redisplay t))
+    (dolist (change highlight-indentation--changes)
+      (let ((start (car change))
+            (end (cdr change)))
+        (highlight-indentation-redraw-region
+         start end
+         'highlight-indentation-overlay
+         'highlight-indentation-put-overlays-region)))
+    (setq highlight-indentation--changes nil)))
 
 (defun highlight-indentation-get-buffer-windows (&optional all-frames)
   "Return a list of windows displaying the current buffer."
@@ -164,7 +182,30 @@ Known issues:
 
 (defun highlight-indentation-redraw-window (win overlay func &optional start)
   "Redraw win starting from START."
-  (highlight-indentation-redraw-region (or start (window-start win)) (window-end win t) overlay func))
+
+  (let ((del-start highlight-indentation--prev-start)
+        (del-end highlight-indentation--prev-end))
+    (dolist (other-win (get-buffer-window-list (current-buffer) nil t))
+      (when del-start
+        (let ((other-start (window-start other-win))
+              (other-end (window-end other-win t)))
+          (cond
+           ((and (>= other-start del-start)
+                 (<= other-end del-end))
+            (setq del-start nil del-end nil))
+           ((and (> del-start other-start)
+                 (< del-start other-end))
+            (setq del-start other-end))
+           ((and (> del-end other-start)
+                 (< del-end other-end))
+            (setq del-end other-start))))))
+    (when (and del-start (< del-start del-end))
+      (highlight-indentation-delete-overlays-region del-start del-end overlay)))
+
+  (highlight-indentation-redraw-region (or start (window-start win)) (window-end win t) overlay func)
+  (setq highlight-indentation--changes nil)
+  (setq-local highlight-indentation--prev-start (window-start win))
+  (setq-local highlight-indentation--prev-end (window-end win t)))
 
 (defun highlight-indentation-redraw-region (start end overlay func)
   "Erease and read overlays between START and END."
@@ -316,6 +357,9 @@ Known issues:
     (dolist (hook highlight-indentation-hooks)
       (remove-hook (car hook) (nth 1 hook) (nth 3 hook)))
 
+    ;; Timer
+    (cancel-timer highlight-indentation--idle-timer)
+
     ;; Fix company overlay bug
     (remove-hook 'company-completion-started-hook #'highlight-indentation--completion-start t)
     (remove-hook 'company-completion-finished-hook #'highlight-indentation--completion-end t)
@@ -331,6 +375,10 @@ Known issues:
       (apply 'add-hook hook))
     (highlight-indentation-redraw-all-windows 'highlight-indentation-overlay
                                               'highlight-indentation-put-overlays-region)
+
+    ;; Timer
+    (setq highlight-indentation--idle-timer
+          (run-with-idle-timer 0.5 t #'highlight-indentation-redraw-changes))
 
     ;; Fix company overlay bug
     (add-hook 'company-completion-started-hook #'highlight-indentation--completion-start nil t)
