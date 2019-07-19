@@ -357,6 +357,8 @@ Known issues:
     (dolist (hook highlight-indentation-hooks)
       (remove-hook (car hook) (nth 1 hook) (nth 3 hook)))
 
+    (setq highlight-indentation--changes nil)
+
     ;; Timer
     (cancel-timer highlight-indentation--idle-timer)
 
