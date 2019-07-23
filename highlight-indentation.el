@@ -85,6 +85,10 @@
   local with `highlight-indentation-set-offset'"
   :group 'highlight-indentation)
 
+(defcustom highlight-indentation-idle-delay 0.5
+  "Amount of time to wait before drawing indentation guides on changes."
+  :group 'highlight-indentation)
+
 (defcustom highlight-indentation-blank-lines nil
   "Show indentation guides on blank lines.  Experimental.
 
@@ -102,7 +106,7 @@ Known issues:
 (defvar highlight-indentation-hidden-overlays nil)
 (defvar highlight-indentation--completing nil)
 (defvar highlight-indentation--idle-timer nil)
-(defvar highlight-indentation--changes nil)
+(defvar-local highlight-indentation--changes nil)
 (defvar-local highlight-indentation--prev-start nil)
 (defvar-local highlight-indentation--prev-end nil)
 
@@ -144,7 +148,7 @@ Known issues:
          start end
          'highlight-indentation-overlay
          'highlight-indentation-put-overlays-region)))
-    (setq highlight-indentation--changes nil)))
+    (setq-local highlight-indentation--changes nil)))
 
 (defun highlight-indentation-get-buffer-windows (&optional all-frames)
   "Return a list of windows displaying the current buffer."
@@ -359,9 +363,6 @@ Known issues:
 
     (setq highlight-indentation--changes nil)
 
-    ;; Timer
-    (cancel-timer highlight-indentation--idle-timer)
-
     ;; Fix company overlay bug
     (remove-hook 'company-completion-started-hook #'highlight-indentation--completion-start t)
     (remove-hook 'company-completion-finished-hook #'highlight-indentation--completion-end t)
@@ -379,8 +380,11 @@ Known issues:
                                               'highlight-indentation-put-overlays-region)
 
     ;; Timer
+    (when highlight-indentation--idle-timer
+      (cancel-timer highlight-indentation--idle-timer))
     (setq highlight-indentation--idle-timer
-          (run-with-idle-timer 0.5 t #'highlight-indentation-redraw-changes))
+          (run-with-idle-timer highlight-indentation-idle-delay
+                               t #'highlight-indentation-redraw-changes))
 
     ;; Fix company overlay bug
     (add-hook 'company-completion-started-hook #'highlight-indentation--completion-start nil t)
