@@ -50,6 +50,7 @@ Known issues:
 - Not yet implemented for highlight-indentation-current-column-mode
 - May not work perfectly near the bottom of the screen
 - Point appears after indent guides on blank lines"
+  :type 'boolean
   :group 'highlight-indentation)
 
 (defvar highlight-indentation-overlay-priority 1)
