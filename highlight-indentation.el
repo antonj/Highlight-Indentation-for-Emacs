@@ -46,7 +46,7 @@
 Known issues:
 - Doesn't work well with completion popups that use overlays
 - Overlays on blank lines sometimes aren't cleaned up or updated perfectly
-  Can be refershed by scrolling
+  Can be refreshed by scrolling
 - Not yet implemented for highlight-indentation-current-column-mode
 - May not work perfectly near the bottom of the screen
 - Point appears after indent guides on blank lines"
@@ -92,7 +92,7 @@ Known issues:
   (highlight-indentation-redraw-region (or start (window-start win)) (window-end win t) overlay func))
 
 (defun highlight-indentation-redraw-region (start end overlay func)
-  "Erease and read overlays between START and END."
+  "Erase and read overlays between START and END."
   (save-match-data
     (save-excursion
       (let ((inhibit-point-motion-hooks t)
@@ -237,7 +237,7 @@ Known issues:
 
 ;;;###autoload
 (defun highlight-indentation-set-offset (offset)
-  "Set indentation offset localy in buffer, will prevent
+  "Set indentation offset locally in buffer, will prevent
 highlight-indentation from trying to guess indentation offset
 from major mode"
   (interactive
@@ -288,7 +288,7 @@ from major mode"
 
 ;;;###autoload
 (define-minor-mode highlight-indentation-current-column-mode
-  "Hilight Indentation minor mode displays a vertical bar
+  "Highlight Indentation minor mode displays a vertical bar
 corresponding to the indentation of the current line"
   :lighter " |"
 
