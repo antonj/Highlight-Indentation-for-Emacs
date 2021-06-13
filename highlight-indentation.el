@@ -17,6 +17,10 @@
 ;;; Commentary:
 ;; Customize `highlight-indentation-face', and
 ;; `highlight-indentation-current-column-face' to suit your theme.
+;;
+;; To replace the highlighting with a thin line
+;;   (setq highlight-indentation-overlay-string "|")
+;; and adapt faces.
 
 ;;; Code:
 
@@ -51,6 +55,11 @@ Known issues:
 - May not work perfectly near the bottom of the screen
 - Point appears after indent guides on blank lines"
   :type 'boolean
+  :group 'highlight-indentation)
+
+(defcustom highlight-indentation-overlay-string " "
+  "String to use for indentation guides"
+  :type '(string (choice (list " " "|")))
   :group 'highlight-indentation)
 
 (defvar highlight-indentation-overlay-priority 1)
@@ -130,6 +139,7 @@ Known issues:
                 (setq o (make-overlay p (+ p 1))))
               (overlay-put o overlay t)
               (overlay-put o 'priority highlight-indentation-overlay-priority)
+              (overlay-put o 'display highlight-indentation-overlay-string)
               (overlay-put o 'face 'highlight-indentation-face))
             (forward-char)
             (setq cur-column (current-column)))
@@ -154,7 +164,7 @@ Known issues:
                     (setq show nil))
                   (setq s (cons (concat
                                  (if show
-                                     (propertize " "
+                                     (propertize highlight-indentation-overlay-string
                                                  'face
                                                  'highlight-indentation-face)
                                    "")
