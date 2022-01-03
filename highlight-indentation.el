@@ -1,7 +1,8 @@
 ;;; highlight-indentation.el --- Minor modes for highlighting indentation
+;; Copyright 2010-2022 Anton Johansson <anton.johansson@gmail.com>
 ;; Author: Anton Johansson <anton.johansson@gmail.com> - http://antonj.se
 ;; Created: Dec 15 23:42:04 2010
-;; Version: 0.7.0
+;; Version: 0.7.1
 ;; URL: https://github.com/antonj/Highlight-Indentation-for-Emacs
 ;;
 ;; This program is free software; you can redistribute it and/or
@@ -13,6 +14,9 @@
 ;; useful, but WITHOUT ANY WARRANTY; without even the implied
 ;; warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 ;; PURPOSE.  See the GNU General Public License for more details.
+;;
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;
 ;;; Commentary:
 ;; Customize `highlight-indentation-face', and
